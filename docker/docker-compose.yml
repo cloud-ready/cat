@@ -4,14 +4,15 @@ version: '2.2'
 
 services:
   cat:
-    container_name: cat
-
     ######## build from Dockerfile ###########
     build:
       context: ../
       dockerfile: ./docker/Dockerfile
     ######## End -> build from Dockerfile ###########
-
+    command: /bin/sh -c '/datasources.sh && catalina.sh run'
+    container_name: cat
+    depends_on:
+      - mysql
     environment:
       # if you have your own mysql, config it here, and disable the 'mysql' config blow
       - MYSQL_URL=cat-mysql # links will maintain /etc/hosts, just use 'container_name'
@@ -19,20 +20,17 @@ services:
       - MYSQL_USERNAME=root
       - MYSQL_PASSWD=
       - MYSQL_SCHEMA=cat
-
-    volumes:
-      # 默认127.0.0.1，可以修改为自己真实的服务器集群地址
-      - "./client.xml:/data/appdatas/cat/client.xml"
-      # 默认使用环境变量设置。可以启用本注解，并修改为自己的配置
-#      - "./datasources.xml:/data/appdatas/cat/datasources.xml"
-    command: /bin/sh -c '/datasources.sh && catalina.sh run'
+    image: ${IMAGE_PREFIX:-}${IMAGE_NAME:-docker_cat}:${IMAGE_TAG:-latest}
     links:
-      - mysql
-    depends_on:
       - mysql
     ports:
       - "8080:8080"
       - "2280:2280"
+    volumes:
+      # 默认127.0.0.1，可以修改为自己真实的服务器集群地址
+      - "./client.xml:/data/appdatas/cat/client.xml"
+      # 默认使用环境变量设置。可以启用本注解，并修改为自己的配置
+      #- "./datasources.xml:/data/appdatas/cat/datasources.xml"
 
   # disable this if you have your own mysql
   mysql:
@@ -40,7 +38,7 @@ services:
     image: mysql:5.7.22
     # expose 33306 to client (navicat)
     ports:
-       - 33306:3306
+      - 33306:3306
     volumes:
       # change './docker/mysql/volume' to your own path
       # WARNING: without this line, your data will be lost.
