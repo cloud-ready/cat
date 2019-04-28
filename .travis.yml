@@ -24,6 +24,7 @@ install:
   #- bash -c "ls -l $HOME/data/appdatas/cat"
   - export CAT_HOME=$HOME/data/appdatas/cat && ./mvnw install -DskipTests -Dorg.slf4j.simpleLogger.defaultLogLevel=warn
 script:
+  - while sleep 9m; do echo "=====[ $SECONDS seconds still running ]====="; done &
   #- bash -c "ls -l $HOME/data/appdatas/cat "
   - bash -c "export CAT_HOME=$HOME/data/appdatas/cat && ./mvnw test -Dorg.slf4j.simpleLogger.defaultLogLevel=warn"
   # see: [Get the Version of Your Maven Project on Command Line](https://blog.soebes.de/blog/2018/06/09/help-plugin/)
