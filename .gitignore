@@ -34,3 +34,6 @@ _book
 *.epub
 *.mobi
 *.pdf
+
+/.mvn/repository
+

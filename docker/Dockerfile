@@ -64,12 +64,17 @@ COPY --chown=centos:centos . ${HOME}/workspace/cat
 RUN	set -ex \
   && echo running under user $(whoami) \
   && ls -la ${HOME}/workspace/cat \
+  && cp -f ${HOME}/workspace/cat/docker${CATALINA_HOME}/conf/tomcat-users.xml ${CATALINA_HOME}/conf/tomcat-users.xml \
 # install Java7
   && sudo yum -y install java-${JAVA_VERSION}-openjdk java-${JAVA_VERSION}-openjdk-devel \
   && java -Xmx32m -version \
 # build CAT
   && cd ${HOME}/workspace/cat \
-  && ./mvnw clean install -DskipTests \
+  && if [[ -d $(pwd)/.mvn/repository ]]; then \
+       ./mvnw clean install -Dmaven.repo.local=$(pwd)/.mvn/repository -DskipTests; \
+     else \
+       ./mvnw clean install -DskipTests; \
+     fi \
   && sudo cp cat-home/target/*.war ${CATALINA_HOME}/webapps/cat.war \
   && sudo chown 1000:1000 ${CATALINA_HOME}/webapps/cat.war \
   && ./mvnw clean \
@@ -79,7 +84,7 @@ RUN	set -ex \
   && sudo cp docker/datasources.sh /datasources.sh \
   && sudo chmod +x /datasources.sh \
 # clean
-  && rm -rf ${HOME}/.m2 \
+  && rm -rf $(pwd)/.mvn/repository ${HOME}/.m2 \
   && sudo yum -y remove --setopt=clean_requirements_on_remove=1 java-${JAVA_VERSION}-openjdk-devel \
   && sudo package-cleanup --leaves \
   && sudo yum clean all
